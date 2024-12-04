@@ -58,8 +58,8 @@ class _RegisterViewState extends State<RegisterView> {
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text('Registration Successful'),
-            content: const Text('Please login to continue'),
+            title: const Text('Berhasil Registrasi'),
+            content: const Text('Silahkan login untuk melanjutkan'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -165,7 +165,7 @@ class _RegisterViewState extends State<RegisterView> {
                           controller: usernameController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Username cannot be empty';
+                              return 'Username tidak boleh kosong';
                             }
                             return null;
                           },
@@ -179,7 +179,7 @@ class _RegisterViewState extends State<RegisterView> {
                           controller: emailController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Email cannot be empty';
+                              return 'Email tidak boleh kosong';
                             }
                             return null;
                           },
@@ -194,7 +194,7 @@ class _RegisterViewState extends State<RegisterView> {
                           isPassword: true,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Password cannot be empty';
+                              return 'Password tidak boleh kosong';
                             }
                             return null;
                           },
@@ -203,12 +203,12 @@ class _RegisterViewState extends State<RegisterView> {
 
                         // Input Berat
                         _buildInputField(
-                          hint: "Your Weight (KG)",
+                          hint: "Berat (KG)",
                           icon: Icons.monitor_weight,
                           controller: weightController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Weight cannot be empty';
+                              return 'Weight tidak boleh kosong';
                             }
                             return null;
                           },
@@ -217,12 +217,12 @@ class _RegisterViewState extends State<RegisterView> {
 
                         // Input Tinggi
                         _buildInputField(
-                          hint: "Your Height (CM)",
+                          hint: "Tinggi (CM)",
                           icon: Icons.height,
                           controller: heightController,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Height cannot be empty';
+                              return 'Height tidak boleh kosong';
                             }
                             return null;
                           },

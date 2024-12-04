@@ -26,7 +26,7 @@ class _HomeViewState extends State<HomeView> {
     CategorySelectionPage(),
     ListNamaView(),
     ProfilePage(),
-    Center(child: Text('Profile Page')),
+    //Center(child: Text('Profile Page')),
   ];
 
   @override

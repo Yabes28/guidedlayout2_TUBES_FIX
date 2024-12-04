@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:guidedlayout2_1748/Profile/editProfile.dart';
 import 'package:guidedlayout2_1748/Profile/pengaturan.dart';
 import 'package:guidedlayout2_1748/Profile/review.dart';
@@ -8,8 +7,38 @@ import 'package:guidedlayout2_1748/Profile/Camera/qr_scan.dart';
 import 'package:guidedlayout2_1748/entity/user.dart'; // Import model User
 import 'package:guidedlayout2_1748/client/UserClient.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  late Future<User> _userProfile;
+  int _keaktifanPoin = 1001; // Inisialisasi nilai awal poin keaktifan
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  void _fetchUserProfile() {
+    setState(() {
+      _userProfile = UserClient.fetchUserProfile();
+    });
+  }
+
+  // Fungsi untuk menangani pemindaian QR Code
+  void _onQrCodeScanned() {
+    setState(() {
+      _keaktifanPoin += 10; // Tambahkan 10 poin keaktifan setelah scanning
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('QR Code berhasil dipindai! Keaktifan +10')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +63,9 @@ class ProfilePage extends StatelessWidget {
               color: Colors.black,
             ),
             onPressed: () {
-              // Navigasi ke halaman Pengaturan
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PengaturanPage()),
+                MaterialPageRoute(builder: (context) => const PengaturanPage()),
               );
             },
           ),
@@ -45,21 +73,20 @@ class ProfilePage extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Menggunakan FutureBuilder untuk mengambil data
           FutureBuilder<User>(
-            future: fetchUserProfile(),  // Memanggil data profil
+            future: _userProfile,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator()); // Loading state
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}')); // Error state
+                return Center(child: Text('Error: ${snapshot.error}'));
               } else if (snapshot.hasData) {
                 final user = snapshot.data!;
                 return SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.grey[200],
@@ -69,19 +96,23 @@ class ProfilePage extends StatelessWidget {
                           color: Colors.grey[700],
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Text(
-                        user.username,  // Menampilkan nama dari API
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        user.username,
+                        style: const TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       ElevatedButton(
-                        onPressed: () {
-                          // Navigasi ke halaman Edit Profile
-                          Navigator.push(
+                        onPressed: () async {
+                          final isUpdated = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => EditProfilePage()),
+                            MaterialPageRoute(
+                                builder: (context) => const EditProfilePage()),
                           );
+                          if (isUpdated == true) {
+                            _fetchUserProfile();
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.zero,
@@ -90,17 +121,17 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ),
                         child: Container(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10, horizontal: 15),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               colors: [Color(0xFF9DCEFF), Color(0xFF92A3FD)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Edit Profile',
                             style: TextStyle(
                               color: Colors.white,
@@ -110,22 +141,23 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ProfileInfoCard(title: 'Tinggi', value: user.tinggi.toString()),  // Menampilkan tinggi dari API
-                          SizedBox(width: 10),
-                          ProfileInfoCard(title: 'Berat', value: user.berat.toString()),  // Menampilkan berat dari API
+                          ProfileInfoCard(
+                              title: 'Tinggi',
+                              value: user.tinggi.toString()),
+                          const SizedBox(width: 10),
+                          ProfileInfoCard(
+                              title: 'Berat', value: user.berat.toString()),
                         ],
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ProfileMenuItem(
-                          icon: Icons.check_circle, title: 'Keaktifan', value: '1001'),
-                      // ProfileMenuItem(
-                      //     icon: Icons.badge, title: 'Badge', value: '1001'),
-                      // ProfileMenuItem(
-                      //     icon: Icons.star, title: 'Poin', value: '1001'),
+                          icon: Icons.check_circle,
+                          title: 'Keaktifan',
+                          value: '$_keaktifanPoin'),
                       Row(
                         children: [
                           Expanded(
@@ -134,7 +166,7 @@ class ProfilePage extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => ReviewPage()),
+                                      builder: (context) => const ReviewPage()),
                                 );
                               },
                               child: ProfileMenuItem(
@@ -145,14 +177,15 @@ class ProfilePage extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(width: 10),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => HistoryPage()),
+                                      builder: (context) =>
+                                          const HistoryPage()),
                                 );
                               },
                               child: ProfileMenuItem(
@@ -169,7 +202,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 );
               } else {
-                return Center(child: Text('No data found'));
+                return const Center(child: Text('No data found'));
               }
             },
           ),
@@ -177,18 +210,21 @@ class ProfilePage extends StatelessWidget {
             bottom: 20,
             right: 20,
             child: FloatingActionButton(
-              onPressed: () {
-                // Tambahkan aksi untuk ikon QR Code
+              onPressed: () async {
+                // Simulasi pemindaian QR Code
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => BarcodeScannerPageView()),
-                );
-                print("QR Code Pressed");
+                      builder: (context) => const BarcodeScannerPageView()),
+                ).then((value) {
+                  if (value == true) {
+                    _onQrCodeScanned(); // Tambahkan poin setelah QR Code berhasil dipindai
+                  }
+                });
               },
               backgroundColor: Colors.blue,
               child: Image.asset(
-                'images/scanner.png', // Path gambar QR
+                'assets/scanner.png',
                 fit: BoxFit.cover,
                 width: 30,
                 height: 30,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:guidedlayout2_1748/View/login.dart';
 
 // Halaman Pengaturan
 class PengaturanPage extends StatelessWidget {
@@ -99,23 +100,32 @@ class SettingsItem extends StatelessWidget {
 class LogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Log out',
-            style: TextStyle(fontSize: 16, color: Colors.red),
-          ),
-          SizedBox(width: 5),
-          Icon(Icons.logout, color: Colors.red),
-        ],
+    return GestureDetector(
+      onTap: () {
+        // Navigasi ke LoginView() dan mengganti layar saat ini
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginView()),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+        padding: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Log out',
+              style: TextStyle(fontSize: 16, color: Colors.red),
+            ),
+            SizedBox(width: 5),
+            Icon(Icons.logout, color: Colors.red),
+          ],
+        ),
       ),
     );
   }

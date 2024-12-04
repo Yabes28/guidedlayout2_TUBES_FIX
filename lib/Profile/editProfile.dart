@@ -27,8 +27,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // Mengambil data profil pengguna
   Future<void> fetchUserProfileData() async {
     try {
-      User user = await fetchUserProfile();  // Menggunakan fungsi fetchUserProfile yang diimpor
+      User user = await UserClient.fetchUserProfile();  // Menggunakan fungsi fetchUserProfile yang diimpor
       setState(() {
+        userId = user.id;
         usernameController.text = user.username;
         heightController.text = user.tinggi.toString();
         weightController.text = user.berat.toString();
@@ -53,19 +54,45 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   // Fungsi untuk memperbarui profil pengguna
-  Future<void> updateUserProfileData(String userId) async {
-    try {
-      final updatedData = {
-        'username': usernameController.text,
-        'berat': int.parse(weightController.text),
-        'tinggi': int.parse(heightController.text),
-      };
-      // Panggil fungsi untuk update profil pengguna
-      await updateUserProfile(userId, updatedData);
+  Future<void> updateUserProfileData() async {
+    
+      // Membuat objek User dari input data
+      
+      User updatedUser = User(
+        id: userId,
+        username: usernameController.text,
+        berat: int.parse(weightController.text),
+        tinggi: int.parse(heightController.text),
+      );
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully!')));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating profile: $e")));
+    try {  
+      await UserClient.updateUserProfile(updatedUser);
+      // Memanggil fungsi updateUserProfile
+      // final response = await updateUserProfile(updatedUser);
+      // final response = await http.put(
+      //   Uri.parse('https://10.0.2.2:8000/api/users'),
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     // 'Authorization': 'Bearer YOUR_API_TOKEN',
+      //   },
+      //   body: json.encode(updatedUser),
+      // );
+
+      // User user = await fetchUserProfile();
+
+      // if (response.statusCode == 200) {
+      //   // ScaffoldMessenger.of(context).showSnackBar(
+      //   //   const SnackBar(content: Text('Profile updated successfully!')),
+      //   // );
+        await fetchUserProfileData();
+        Navigator.pop(context, true);
+      // } else {
+      //   throw Exception('Failed to update profile: ${response.reasonPhrase}');
+      // }
+    } catch (err) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error updating profile: $err")),
+      );
     }
   }
 
@@ -130,7 +157,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () => updateUserProfileData(userId),
+                    onPressed: updateUserProfileData,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       shape: RoundedRectangleBorder(

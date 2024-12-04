@@ -6,7 +6,8 @@ class BarcodeScannerPageView extends StatefulWidget {
   const BarcodeScannerPageView({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerPageViewState createState() => _BarcodeScannerPageViewState();
+  _BarcodeScannerPageViewState createState() =>
+      _BarcodeScannerPageViewState();
 }
 
 class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
@@ -62,19 +63,6 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
             child: Icon(Icons.cameraswitch, color: Colors.white),
           ),
         ),
-        // Optional: Add torch button for flashlight
-        // Positioned(
-        //   bottom: 20,
-        //   right: 20,
-        //   child: FloatingActionButton(
-        //     heroTag: "torchToggle", // Hero tag unik untuk tombol flashlight
-        //     onPressed: () {
-        //       controller.toggleTorch();
-        //     },
-        //     backgroundColor: Colors.blue,
-        //     child: Icon(Icons.flashlight_on, color: Colors.white),
-        //   ),
-        // ),
       ],
     );
   }
@@ -84,6 +72,8 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Berhasil membaca QR Code: $qrCode')),
     );
+    // Setelah QR Code berhasil dipindai, kembali ke halaman sebelumnya
+    Navigator.pop(context, true); // Mengirim true ke halaman profil
   }
 
   void copyToClipboard(String text) {
