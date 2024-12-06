@@ -88,24 +88,31 @@ class UserClient {
     }
   }
 
-  static Future<User> fetchUserProfile() async {
-  try{
-    final response = await http.get(Uri.http(url, endpoint));
+  static Future<User> fetchUserProfile(String token) async {
+    final url = Uri.parse('http://10.0.2.2:8000/api/user'); // Endpoint API Anda
+    final response = await http.get(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
 
-    if (response.statusCode != 200) throw Exception(response.reasonPhrase);
-      final List<dynamic> jsonData = json.decode(response.body);
-
-      if (jsonData.isNotEmpty) {
-      // Mengembalikan objek User dari data JSON pertama
-      return User.fromJson(jsonData[0]);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data is Map<String, dynamic>) {
+        // Konversi JSON ke objek User
+        return User.fromJson(data);
+      } else if (data is List && data.isNotEmpty) {
+        // Jika respons adalah List, ambil elemen pertama
+        return User.fromJson(data[0]);
+      } else {
+        throw Exception('Unexpected data format');
+      }
     } else {
-      throw Exception('No user data available');
+      throw Exception('Failed to fetch user profile');
     }
-  } catch (e) {
-    return Future.error(e.toString());
   }
-  
-}
 
 // Fungsi untuk melakukan update profile
   static Future<http.Response> updateUserProfile(User user) async {

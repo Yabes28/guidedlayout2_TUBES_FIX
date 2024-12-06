@@ -6,6 +6,7 @@ import 'package:guidedlayout2_1748/Profile/histori.dart';
 import 'package:guidedlayout2_1748/Profile/Camera/qr_scan.dart';
 import 'package:guidedlayout2_1748/entity/user.dart'; // Import model User
 import 'package:guidedlayout2_1748/client/UserClient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -26,8 +27,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _fetchUserProfile() {
     setState(() {
-      _userProfile = UserClient.fetchUserProfile();
+      _userProfile = _getUserProfile();
     });
+  }
+
+  Future<User> _getUserProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    if (token == null) {
+      throw Exception('Token not found');
+    }
+    return UserClient.fetchUserProfile(token);
   }
 
   // Fungsi untuk menangani pemindaian QR Code

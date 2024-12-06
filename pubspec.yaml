@@ -19,6 +19,7 @@ dependencies:
   http: ^1.2.2
   shared_preferences: 2.3.3
   flutter_riverpod: ^2.6.1
+  fluttertoast: ^8.2.1
 
 dev_dependencies:
   camera: ^0.10.5+2

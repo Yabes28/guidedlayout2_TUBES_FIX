@@ -1,7 +1,9 @@
-import 'dart:convert'; // Untuk parsing JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Untuk integrasi API
-import 'package:guidedlayout2_1748/View/login.dart'; // Navigasi ke halaman Login
+import 'package:guidedlayout2_1748/View/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 
 class RegisterView extends StatefulWidget {
   const RegisterView({Key? key}) : super(key: key);
@@ -11,93 +13,79 @@ class RegisterView extends StatefulWidget {
 }
 
 class _RegisterViewState extends State<RegisterView> {
-  final _formKey = GlobalKey<FormState>(); // Key untuk validasi form
+  final _formKey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController weightController = TextEditingController();
   TextEditingController heightController = TextEditingController();
-  String _gender = "laki-laki"; // Gender default sesuai validasi Laravel
+  String _gender = "laki-laki";
 
-  // Fungsi untuk register ke API Laravel
-  Future<void> register() async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/register'); // Endpoint register Laravel
-    try {
-      // Tampilkan dialog loading
+Future<void> register() async {
+  final url = Uri.parse('http://10.0.2.2:8000/api/register'); // Endpoint API
+  try {
+    // Tampilkan dialog loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    // Kirim data ke API
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json', // Header untuk JSON
+        'Accept': 'application/json', // Header tambahan untuk Laravel
+      },
+      body: jsonEncode({
+        'username': usernameController.text.trim(),
+        'email': emailController.text.trim(),
+        'password': passwordController.text,
+        'password_confirmation': passwordController.text,
+        'berat': weightController.text.trim(),
+        'tinggi': heightController.text.trim(),
+        'gender': _gender,
+      }),
+    );
+
+    // Tutup dialog loading
+    Navigator.of(context).pop();
+
+    if (response.statusCode == 201) {
+      // Jika registrasi berhasil, parsing data respons
+      final responseData = jsonDecode(response.body);
+
       showDialog(
         context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(),
+        builder: (_) => AlertDialog(
+          title: const Text('Berhasil Registrasi'),
+          content: Text(responseData['message'] ?? 'Registrasi berhasil!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginView()),
+                );
+              },
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
+    } else if (response.statusCode == 400 || response.statusCode == 422) {
+      // Jika validasi gagal atau error pada input
+      final responseData = jsonDecode(response.body);
+      final errorMessage = responseData['message'] ?? 'Error during registration';
 
-      // Kirim data ke API
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json', // Header untuk JSON
-          'Accept': 'application/json', // Header tambahan untuk Laravel
-        },
-        body: jsonEncode({
-          'username': usernameController.text, // Kirim username
-          'email': emailController.text, // Kirim email
-          'password': passwordController.text, // Kirim password
-          'password_confirmation': passwordController.text, // Konfirmasi password
-          'berat': weightController.text, // Kirim berat badan
-          'tinggi': heightController.text, // Kirim tinggi badan
-          'gender': _gender, // Kirim gender
-        }),
-      );
-
-      // Tutup dialog loading
-      Navigator.of(context).pop();
-
-      if (response.statusCode == 201) {
-        // Jika registrasi berhasil, tampilkan dialog sukses
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Berhasil Registrasi'),
-            content: const Text('Silahkan login untuk melanjutkan'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginView()),
-                  );
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      } else {
-        // Jika registrasi gagal, tampilkan pesan error
-        final error = jsonDecode(response.body)['message']; // Parsing pesan error
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Error'),
-            content: Text(error ?? 'Unknown error occurred'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      // Tutup dialog loading jika ada error
-      Navigator.of(context).pop();
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Error'),
-          content: Text('Failed to connect to server: $e'),
+          content: Text(errorMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -106,8 +94,29 @@ class _RegisterViewState extends State<RegisterView> {
           ],
         ),
       );
+    } else {
+      // Untuk semua status kode error lainnya
+      throw Exception('Unexpected error occurred');
     }
+  } catch (e) {
+    // Penanganan error jika koneksi gagal atau exception lain terjadi
+    Navigator.of(context).pop(); // Tutup dialog loading
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Error'),
+        content: Text('Failed to connect to server: $e'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -232,9 +241,9 @@ class _RegisterViewState extends State<RegisterView> {
                         // Pilihan Gender
                         Row(
                           children: [
-                            _buildGenderRadio("laki-laki"),
+                            _buildGenderRadio("Laki-laki"),
                             const SizedBox(width: 10),
-                            _buildGenderRadio("perempuan"),
+                            _buildGenderRadio("Perempuan"),
                           ],
                         ),
                         const SizedBox(height: 20),

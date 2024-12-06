@@ -5,6 +5,9 @@ import 'dart:async';
 import 'package:guidedlayout2_1748/Home/alat1.dart';
 import 'package:guidedlayout2_1748/Home/abs.dart';
 import 'package:guidedlayout2_1748/entity/alat.dart';
+import 'package:guidedlayout2_1748/client/UserClient.dart';
+import 'package:guidedlayout2_1748/entity/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -60,12 +63,16 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
 
   // Menambahkan Future untuk mengambil data alat
   late Future<List<Alat>> _futureAlatList;
+  late Future<User> _userProfile; // Future untuk mengambil data pengguna
+  String _username = ''; // Variabel untuk menyimpan nama pengguna
+
 
   @override
   void initState() {
     super.initState();
     _startAutoSlide();
     _futureAlatList = fetchAlatList(); // Inisialisasi pengambilan data alat
+    _fetchUserProfile(); // Panggil data pengguna saat initState
   }
 
   void _startAutoSlide() {
@@ -81,6 +88,25 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
         curve: Curves.easeInOut,
       );
     });
+  }
+
+  void _fetchUserProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) {
+        throw Exception('Token not found');
+      }
+      final user = await UserClient.fetchUserProfile(token);
+      setState(() {
+        _username = user.username; // Simpan nama pengguna di state
+      });
+    } catch (e) {
+      debugPrint('Error fetching user profile: $e');
+      setState(() {
+        _username = 'Guest'; // Nama default jika terjadi error
+      });
+    }
   }
 
   @override
@@ -102,8 +128,8 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Selamat datang Nathaniel!',
+              Text(
+                'Selamat datang $_username!',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),

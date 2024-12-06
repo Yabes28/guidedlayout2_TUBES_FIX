@@ -1,50 +1,34 @@
-import 'dart:convert'; // Untuk parsing JSON
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:guidedlayout2_1748/Home/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:guidedlayout2_1748/View/register.dart';
-import 'package:guidedlayout2_1748/component/form_component.dart';
-import 'package:http/http.dart' as http; // Untuk integrasi API
 
 class LoginView extends StatefulWidget {
-  final Map? data;
-  const LoginView({super.key, this.data});
+  const LoginView({Key? key}) : super(key: key);
 
   @override
   State<LoginView> createState() => _LoginViewState();
 }
 
 class _LoginViewState extends State<LoginView> {
-  // Key untuk validasi form
   final _formKey = GlobalKey<FormState>();
-
-  // Controller untuk input data
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  Map<dynamic, dynamic>? dataForm;
 
-  @override
-  void initState() {
-    super.initState();
-    // Data awal form jika ada (dikirim melalui parameter)
-    dataForm = widget.data;
-  }
-
-  // Fungsi untuk login ke API Laravel
   Future<void> login() async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/login'); // Endpoint login Laravel
+    final url = Uri.parse('http://10.0.2.2:8000/api/login');
     try {
-      // Tampilkan indikator loading
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      // Kirim data login menggunakan email atau username
       final body = {
         'username': usernameController.text.isNotEmpty
             ? usernameController.text
@@ -55,34 +39,44 @@ class _LoginViewState extends State<LoginView> {
         'password': passwordController.text,
       };
 
-      // Hapus nilai null dari body
       body.removeWhere((key, value) => value == null);
 
       final response = await http.post(
         url,
         headers: {
-          'Content-Type': 'application/json', // Header untuk JSON
-          'Accept': 'application/json', // Header tambahan untuk Laravel
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: jsonEncode(body),
       );
 
-      // Tutup dialog loading
       Navigator.of(context).pop();
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body); // Parsing respons JSON
-        final token = data['token']; // Ambil token autentikasi
-        debugPrint('Login Successful: Token - $token'); // Debug token
+        final data = jsonDecode(response.body);
+        final token = data['token'];
 
-        // Navigasi ke halaman Home
-        Navigator.push(
+        // Simpan token ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+
+        // Tampilkan toast sukses
+        Fluttertoast.showToast(
+          msg: "Login berhasil!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+
+        // Navigasi ke HomeView
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const HomeView()),
         );
       } else {
         final error = jsonDecode(response.body)['message'] ?? 'Login failed';
-        // Tampilkan dialog error jika login gagal
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
@@ -98,7 +92,6 @@ class _LoginViewState extends State<LoginView> {
         );
       }
     } catch (e) {
-      // Tutup dialog loading jika ada error koneksi
       Navigator.of(context).pop();
       showDialog(
         context: context,
@@ -158,47 +151,60 @@ class _LoginViewState extends State<LoginView> {
                     child: Column(
                       children: [
                         // Input username
-                        inputForm(
-                          (p0) {
-                            if (emailController.text.isEmpty &&
-                                (p0 == null || p0.isEmpty)) {
-                              return "Username atau Email tidak boleh kosong";
-                            }
-                            return null;
-                          },
+                          TextFormField(
                           controller: usernameController,
-                          hintTxt: "Username",
-                          helperTxt: "",
-                          iconData: Icons.person,
-                        ),
-                        // Input email
-                        inputForm(
-                          (p0) {
-                            if (usernameController.text.isEmpty &&
-                                (p0 == null || p0.isEmpty)) {
-                              return "Username atau Email tidak boleh kosong";
+                          decoration: InputDecoration(
+                            hintText: "Username",
+                            prefixIcon: Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Username tidak boleh kosong";
                             }
                             return null;
                           },
-                          controller: emailController,
-                          hintTxt: "Email",
-                          helperTxt: "",
-                          iconData: Icons.email,
                         ),
+                        const SizedBox(height: 20),
+                        // Input email
+                          TextFormField(
+                          controller: emailController,
+                          decoration: InputDecoration(
+                            hintText: "Email",
+                            prefixIcon: Icon(Icons.email),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Email tidak boleh kosong";
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
                         // Input password
-                        inputForm(
-                          (p0) {
-                            if (p0 == null || p0.isEmpty) {
+                        TextFormField(
+                          controller: passwordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: "Password",
+                            prefixIcon: Icon(Icons.lock),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
                               return "Password tidak boleh kosong";
                             }
                             return null;
                           },
-                          controller: passwordController,
-                          hintTxt: "Password",
-                          helperTxt: "",
-                          iconData: Icons.lock,
-                          password: true,
                         ),
+                        const SizedBox(height: 20),
                         // Link lupa password
                         Align(
                           alignment: Alignment.center,

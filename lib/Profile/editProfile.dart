@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:guidedlayout2_1748/entity/user.dart';  // Mengimpor User
 import 'package:guidedlayout2_1748/client/UserClient.dart';  // Mengimpor fungsi dari client
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
@@ -27,7 +28,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
   // Mengambil data profil pengguna
   Future<void> fetchUserProfileData() async {
     try {
-      User user = await UserClient.fetchUserProfile();  // Menggunakan fungsi fetchUserProfile yang diimpor
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('Token not found');
+      }
+
+      User user = await UserClient.fetchUserProfile(token);  // Menggunakan fungsi fetchUserProfile yang diimpor
       setState(() {
         userId = user.id;
         usernameController.text = user.username;
