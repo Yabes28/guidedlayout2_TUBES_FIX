@@ -241,9 +241,9 @@ Future<void> register() async {
                         // Pilihan Gender
                         Row(
                           children: [
-                            _buildGenderRadio("Laki-laki"),
+                             _buildGenderRadio("Laki-laki", "laki-laki"), // Nilai untuk API adalah "laki-laki"
                             const SizedBox(width: 10),
-                            _buildGenderRadio("Perempuan"),
+                           _buildGenderRadio("Perempuan", "perempuan"), // Nilai untuk API adalah "perempuan"
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -333,20 +333,20 @@ Future<void> register() async {
   }
 
   // Helper untuk pilihan gender
-  Widget _buildGenderRadio(String gender) {
-    return Row(
-      children: [
-        Radio<String>(
-          value: gender,
-          groupValue: _gender,
-          onChanged: (String? value) {
-            setState(() {
-              _gender = value!;
-            });
-          },
-        ),
-        Text(gender),
-      ],
-    );
-  }
+  Widget _buildGenderRadio(String displayText, String valueForApi) {
+  return Row(
+    children: [
+      Radio<String>(
+        value: valueForApi, // Nilai sesuai format API
+        groupValue: _gender,
+        onChanged: (String? value) {
+          setState(() {
+            _gender = value!;
+          });
+        },
+      ),
+      Text(displayText),
+    ],
+  );
+}
 }
