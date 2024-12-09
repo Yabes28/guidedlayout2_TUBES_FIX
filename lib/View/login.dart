@@ -21,83 +21,82 @@ class _LoginViewState extends State<LoginView> {
   TextEditingController passwordController = TextEditingController();
 
   Future<void> login() async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/login');
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator()),
+  final url = Uri.parse('http://10.0.2.2:8000/api/login');
+  try {
+    // Tampilkan loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    // Siapkan data body
+    final body = {
+      'username': usernameController.text.isNotEmpty
+          ? usernameController.text
+          : null,
+      'email': emailController.text.isNotEmpty
+          ? emailController.text
+          : null,
+      'password': passwordController.text,
+    };
+    body.removeWhere((key, value) => value == null);
+
+    // Kirim permintaan ke API
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    // Tutup loading dialog
+    Navigator.of(context).pop();
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final token = data['token'];
+
+      // Simpan token ke SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token', token);
+
+      // Tampilkan toast sukses
+      Fluttertoast.showToast(
+        msg: "Login berhasil!",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
 
-      final body = {
-        'username': usernameController.text.isNotEmpty
-            ? usernameController.text
-            : null,
-        'email': emailController.text.isNotEmpty
-            ? emailController.text
-            : null,
-        'password': passwordController.text,
-      };
+      // Navigasi ke HomeView
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeView()),
+      );
+    } else {
+      final error = jsonDecode(response.body)['message'] ?? 'Login gagal';
 
-      body.removeWhere((key, value) => value == null);
-
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(body),
+      // Tampilkan toast error
+      Fluttertoast.showToast(
+        msg: error,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
       );
 
-      Navigator.of(context).pop();
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final token = data['token'];
-
-        // Simpan token ke SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', token);
-
-        // Tampilkan toast sukses
-        Fluttertoast.showToast(
-          msg: "Login berhasil!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-
-        // Navigasi ke HomeView
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeView()),
-        );
-      } else {
-        final error = jsonDecode(response.body)['message'] ?? 'Login failed';
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Login Failed'),
-            content: Text(error),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    } catch (e) {
-      Navigator.of(context).pop();
+      // Tampilkan dialog error
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Error'),
-          content: Text('Failed to connect to server: $e'),
+          title: const Text('Login Failed'),
+          content: Text(error),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -107,7 +106,36 @@ class _LoginViewState extends State<LoginView> {
         ),
       );
     }
+  } catch (e) {
+    Navigator.of(context).pop();
+
+    // Tampilkan toast error koneksi
+    Fluttertoast.showToast(
+      msg: 'Gagal terhubung ke server: $e',
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+
+    // Tampilkan dialog error koneksi
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Error'),
+        content: Text('Gagal terhubung ke server: $e'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

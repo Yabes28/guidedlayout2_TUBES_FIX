@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:guidedlayout2_1748/View/login.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
@@ -55,9 +55,20 @@ Future<void> register() async {
     Navigator.of(context).pop();
 
     if (response.statusCode == 201) {
-      // Jika registrasi berhasil, parsing data respons
+      // Jika registrasi berhasil
       final responseData = jsonDecode(response.body);
 
+      // Toast sukses
+      Fluttertoast.showToast(
+        msg: responseData['message'] ?? 'Registrasi berhasil!',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      // Dialog sukses
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -77,10 +88,21 @@ Future<void> register() async {
         ),
       );
     } else if (response.statusCode == 400 || response.statusCode == 422) {
-      // Jika validasi gagal atau error pada input
+      // Jika validasi gagal
       final responseData = jsonDecode(response.body);
       final errorMessage = responseData['message'] ?? 'Error during registration';
 
+      // Toast error
+      Fluttertoast.showToast(
+        msg: errorMessage,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+
+      // Dialog error
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -95,12 +117,23 @@ Future<void> register() async {
         ),
       );
     } else {
-      // Untuk semua status kode error lainnya
       throw Exception('Unexpected error occurred');
     }
   } catch (e) {
-    // Penanganan error jika koneksi gagal atau exception lain terjadi
+    // Penanganan error koneksi
     Navigator.of(context).pop(); // Tutup dialog loading
+
+    // Toast error koneksi
+    Fluttertoast.showToast(
+      msg: 'Failed to connect to server: $e',
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+
+    // Dialog error koneksi
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -116,6 +149,7 @@ Future<void> register() async {
     );
   }
 }
+
 
 
   @override
