@@ -13,7 +13,6 @@ class WelcomeView extends StatefulWidget {
 
 class _WelcomeViewState extends State<WelcomeView> with SingleTickerProviderStateMixin {
   double _opacity = 0.0;
-  double _scale = 0.8;
   late AnimationController _pulseController;
 
   @override
@@ -24,7 +23,6 @@ class _WelcomeViewState extends State<WelcomeView> with SingleTickerProviderStat
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _opacity = 1.0;
-        _scale = 1.0;
       });
     });
 
@@ -190,7 +188,7 @@ class _WelcomeViewState extends State<WelcomeView> with SingleTickerProviderStat
                   ),
                   child: const Center(
                     child: Text(
-                      'Log in',
+                      'Login',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,

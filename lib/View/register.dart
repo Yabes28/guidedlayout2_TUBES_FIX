@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:guidedlayout2_1748/View/login.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,7 +23,7 @@ class _RegisterViewState extends State<RegisterView> {
 Future<void> register() async {
   final url = Uri.parse('http://10.0.2.2:8000/api/register'); // Endpoint API
   try {
-    // Tampilkan dialog loading
+    // Dialog loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -33,7 +32,7 @@ Future<void> register() async {
       ),
     );
 
-    // Kirim data ke API
+    // Mengirim data ke API
     final response = await http.post(
       url,
       headers: {
@@ -51,7 +50,7 @@ Future<void> register() async {
       }),
     );
 
-    // Tutup dialog loading
+    // Dialog loading
     Navigator.of(context).pop();
 
     if (response.statusCode == 201) {
@@ -120,7 +119,7 @@ Future<void> register() async {
       throw Exception('Unexpected error occurred');
     }
   } catch (e) {
-    // Penanganan error koneksi
+    // Handling error koneksi
     Navigator.of(context).pop(); // Tutup dialog loading
 
     // Toast error koneksi
@@ -153,7 +152,7 @@ Future<void> register() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Warna latar belakang
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

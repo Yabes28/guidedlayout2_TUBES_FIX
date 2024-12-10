@@ -6,7 +6,6 @@ import 'package:guidedlayout2_1748/Home/alat1.dart';
 import 'package:guidedlayout2_1748/Home/abs.dart';
 import 'package:guidedlayout2_1748/entity/alat.dart';
 import 'package:guidedlayout2_1748/client/UserClient.dart';
-import 'package:guidedlayout2_1748/entity/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {
@@ -63,9 +62,7 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
 
   // Menambahkan Future untuk mengambil data alat
   late Future<List<Alat>> _futureAlatList;
-  late Future<User> _userProfile; // Future untuk mengambil data pengguna
   String _username = ''; // Variabel untuk menyimpan nama pengguna
-
 
   @override
   void initState() {
