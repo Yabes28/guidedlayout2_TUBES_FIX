@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:guidedlayout2_1748/entity/user.dart';
+import 'dart:io';
 
 class UserClient {
   static final String url = '10.0.2.2:8000';
@@ -61,21 +62,174 @@ class UserClient {
   }
 
   // Update user
-  // static Future<User> update(User user) async {
+  // static Future<User> update(User user, String token, File? image) async {
   //   try {
-  //     var response = await http.put(
-  //       Uri.http(url, '$updateUserEndpoint/${user.id}'),
-  //       headers: {"Content-Type": "application/json"},
-  //       body: json.encode(user.toJson()),
-  //     );
+  //     var uri = Uri.parse('http://10.0.2.2:8000/api/user/${user.id}');
+  //     var request = http.MultipartRequest('PUT', uri)
+  //       ..headers['Authorization'] = 'Bearer $token'
+  //       ..fields['username'] = user.username
+  //       ..fields['berat'] = user.berat.toString()
+  //       ..fields['tinggi'] = user.tinggi.toString();
 
-  //     if (response.statusCode != 200) throw Exception(response.reasonPhrase);
+  //     if (image != null) {
+  //       request.files.add(await http.MultipartFile.fromPath('image', image.path));
+  //     }
 
-  //     return User.fromJson(json.decode(response.body));
+  //     var response = await request.send();
+
+  //     if (response.statusCode == 200) {
+  //       final responseBody = await response.stream.bytesToString();
+  //       return User.fromJson(json.decode(responseBody));
+  //     } else {
+  //       throw Exception('Failed to update profile: ${response.statusCode}');
+  //     }
   //   } catch (e) {
   //     return Future.error(e.toString());
   //   }
   // }
+
+//   static Future<void> update(User user, String token, File? image) async {
+//   try {
+//     if (user.username.isEmpty || user.berat == 0 || user.tinggi == 0) {
+//       throw Exception('Data is incomplete!');
+//     }
+
+//     var uri = Uri.parse('http://10.0.2.2:8000/api/user/${user.id}');
+//     var request = http.MultipartRequest('PUT', uri)
+//       ..headers['Authorization'] = 'Bearer $token'
+//       ..fields['username'] = user.username
+//       ..fields['berat'] = user.berat.toString()
+//       ..fields['tinggi'] = user.tinggi.toString();
+
+//     // Debugging: Print fields to ensure data is being sent
+//     print("Username: ${user.username}");
+//     print("Berat: ${user.berat}");
+//     print("Tinggi: ${user.tinggi}");
+
+//     // Jika ada gambar
+//     if (image != null) {
+//       print("Image Path: ${image.path}");
+//       request.files.add(await http.MultipartFile.fromPath('image', image.path));
+//     } else {
+//       print("No image provided.");
+//     }
+
+//     var response = await request.send();
+
+//     if (response.statusCode == 200) {
+//       final responseBody = await response.stream.bytesToString();
+//       final jsonResponse = json.decode(responseBody);
+//       print('Updated User: ${jsonResponse['user']}');
+//     } else {
+//       final responseBody = await response.stream.bytesToString();
+//       print('Error updating profile: ${response.statusCode}, $responseBody');
+//       throw Exception('Failed to update profile: ${response.statusCode}');
+//     }
+//   } catch (e) {
+//     print("Error: $e");
+//   }
+// }
+//ini
+// static Future<void> update(User user, String token, File? image) async {
+//   try {
+//     var uri = Uri.parse('http://10.0.2.2:8000/api/user/${user.id}');
+    
+//     var request = http.MultipartRequest('PUT', uri)
+//       ..headers['Authorization'] = 'Bearer $token'
+//       // Mengirim data pengguna sebagai form fields
+//       ..fields['username'] = user.username
+//       ..fields['berat'] = user.berat.toString()
+//       ..fields['tinggi'] = user.tinggi.toString();
+
+//     // Jika ada gambar, kirim gambar sebagai file
+//     if (image != null) {
+//       print("Image Path: ${image.path}");
+//       request.files.add(await http.MultipartFile.fromPath('image', image.path));
+//     } else {
+//       print("No image provided.");
+//     }
+
+//     // Kirim request dan terima response
+//     var response = await request.send();
+
+//     if (response.statusCode == 200) {
+//       final responseBody = await response.stream.bytesToString();
+//       final jsonResponse = json.decode(responseBody);
+//       print('User updated successfully');
+//       print('Updated User: ${jsonResponse['user']}');
+//     } else {
+//       final responseBody = await response.stream.bytesToString();
+//       print('Error updating profile: ${response.statusCode}, $responseBody');
+//       throw Exception('Failed to update profile: ${response.statusCode}');
+//     }
+//   } catch (e) {
+//     print("Error: $e");
+//   }
+// }
+
+
+static Future<void> update(User user, String token) async {
+  try {
+    var uri = Uri.parse('http://10.0.2.2:8000/api/user/${user.id}');
+    var response = await http.put(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',  // Pastikan header Content-Type adalah application/json
+      },
+      body: json.encode({
+        'username': user.username,
+        'berat': user.berat,
+        'tinggi': user.tinggi,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('User updated successfully');
+      final responseBody = json.decode(response.body);
+      print('Updated User: ${responseBody['user']}');
+    } else {
+      final responseBody = json.decode(response.body);
+      print('Error updating profile: ${responseBody['message']}');
+      throw Exception('Failed to update profile: ${response.statusCode}');
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+
+static Future<void> updateUserPhoto(String userId, File? image, String token) async {
+  if (image == null) {
+    print("No image provided.");
+    return;
+  }
+
+  try {
+    var uri = Uri.parse('http://10.0.2.2:8000/api/user/photo/${userId}');
+    
+    var request = http.MultipartRequest('POST', uri)
+      ..headers['Authorization'] = 'Bearer $token'
+      ..files.add(await http.MultipartFile.fromPath('image', image.path));
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      final responseBody = await response.stream.bytesToString();
+      print('User photo updated successfully');
+      print('Response: $responseBody');
+    } else {
+      final responseBody = await response.stream.bytesToString();
+      print('Error updating photo: ${response.statusCode}, $responseBody');
+      throw Exception('Failed to update user photo: ${response.statusCode}');
+    }
+  } catch (e) {
+    print("Error: $e");
+  }
+}
+
+
+
 
   // Delete user
   static Future<void> delete(String id) async {
@@ -115,20 +269,20 @@ class UserClient {
   }
 
 // Fungsi untuk melakukan update profile
-  static Future<http.Response> updateUserProfile(User user) async {
-  try {
-    var response = await http.put(Uri.http(url, '$endpoint/${user.id}'),
-      body: user.toRawJson(),
-      headers: {'Content-Type': 'application/json'},
-    );
+//   static Future<http.Response> updateUserProfile(User user) async {
+//   try {
+//     var response = await http.put(Uri.http(url, '$endpoint/${user.id}'),
+//       body: user.toRawJson(),
+//       headers: {'Content-Type': 'application/json'},
+//     );
 
-    // Memeriksa status code dari response
-    if (response.statusCode != 200) throw Exception(response.reasonPhrase);
+//     // Memeriksa status code dari response
+//     if (response.statusCode != 200) throw Exception(response.reasonPhrase);
     
-    return response;
-  } catch (e) {
-    return Future.error(e.toString());
-  }
-}
+//     return response;
+//   } catch (e) {
+//     return Future.error(e.toString());
+//   }
+// }
 
 }

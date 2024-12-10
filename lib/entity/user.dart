@@ -7,6 +7,7 @@ class User {
   final int berat;
   final int tinggi;
   // final String gender;
+  final String? foto;
 
   User({
     required this.id,
@@ -15,6 +16,7 @@ class User {
     required this.berat,
     required this.tinggi,
     // required this.gender,
+    this.foto,
   });
 
   factory User.fromRawJson(String str) => User.fromJson(json.decode(str));
@@ -26,6 +28,7 @@ class User {
       berat: json['berat'],
       tinggi: json['tinggi'],
       // gender: json['gender'],
+      foto: json['foto'],
     );
 
   String toRawJson() => json.encode(toJson());
@@ -37,6 +40,7 @@ class User {
       'berat': berat,
       'tinggi': tinggi,
       // 'gender': gender,
+      'foto': foto,
     };
   }
 }

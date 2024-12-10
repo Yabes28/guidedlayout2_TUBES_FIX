@@ -75,9 +75,24 @@ class _LoginViewState extends State<LoginView> {
 
       // Navigasi ke HomeView
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeView()),
-      );
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const HomeView(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0); // Awal transisi dari kanan
+          const end = Offset.zero;       // Akhir transisi di tengah
+          const curve = Curves.easeInOut;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+      ),
+    );
     } else {
       final error = jsonDecode(response.body)['message'] ?? 'Login gagal';
 
@@ -95,7 +110,7 @@ class _LoginViewState extends State<LoginView> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Login Failed'),
+          title: const Text('Login Gagal'),
           content: Text(error),
           actions: [
             TextButton(
@@ -136,7 +151,6 @@ class _LoginViewState extends State<LoginView> {
   }
 }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,11 +182,18 @@ class _LoginViewState extends State<LoginView> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFFB0C4DE), Color(0xFF87CEFA)],
+                      colors: [Color(0xFFB0E0E6), Color(0xFFE0BBE4)],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Form(
                     key: _formKey, // Menyimpan status form
@@ -259,7 +280,7 @@ class _LoginViewState extends State<LoginView> {
                 // Tombol Login
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF87CEFA),
+                    backgroundColor: const Color(0xFF6A5ACD),
                     padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(50),
@@ -317,20 +338,31 @@ class _LoginViewState extends State<LoginView> {
                 const SizedBox(height: 20),
 
                 // Link Register
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const RegisterView()),
-                    );
-                  },
-                  child: const Text(
-                    "Don't have an account yet? Register",
-                    style: TextStyle(
-                      color: Color(0xFF8A2BE2),
-                      fontWeight: FontWeight.bold,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text("Belom punya akun ? "),
+                    TextButton(
+                      onPressed: () {
+                          Fluttertoast.showToast(
+                          msg: "Silahkan Registrasi...",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterView()),
+                        );
+                      },
+                      child: const Text(
+                        'Register',
+                        style: TextStyle(
+                          color: Color(0xFF8A2BE2),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

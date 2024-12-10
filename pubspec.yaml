@@ -20,6 +20,7 @@ dependencies:
   shared_preferences: 2.3.3
   flutter_riverpod: ^2.6.1
   fluttertoast: ^8.2.1
+  animated_text_kit: ^4.2.0
 
 dev_dependencies:
   camera: ^0.10.5+2
@@ -29,8 +30,6 @@ dev_dependencies:
   mobile_scanner: ^3.2.0
   path_provider: ^2.0.15
   # qr_flutter: ^4.1.0
-
-  
 
 flutter:
   uses-material-design: true

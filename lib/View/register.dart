@@ -150,8 +150,6 @@ Future<void> register() async {
   }
 }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -316,9 +314,14 @@ Future<void> register() async {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account? "),
+                    const Text("Sudah punya akun ? "),
                     TextButton(
                       onPressed: () {
+                        Fluttertoast.showToast(
+                          msg: "Silahkan Login...",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => const LoginView()),
