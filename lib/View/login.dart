@@ -22,6 +22,7 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> login() async {
   final url = Uri.parse('http://10.0.2.2:8000/api/login');
+  //final url = Uri.parse('http:/192.168.18.14/api/login');
   try {
     // Tampilkan loading dialog
     showDialog(

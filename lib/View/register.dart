@@ -22,6 +22,7 @@ class _RegisterViewState extends State<RegisterView> {
 
 Future<void> register() async {
   final url = Uri.parse('http://10.0.2.2:8000/api/register'); // Endpoint API
+  //final uri = Uri.parse('http:/192.168.18.14/api/register');
   try {
     // Dialog loading
     showDialog(

@@ -228,9 +228,6 @@ static Future<void> updateUserPhoto(String userId, File? image, String token) as
   }
 }
 
-
-
-
   // Delete user
   static Future<void> delete(String id) async {
     try {
