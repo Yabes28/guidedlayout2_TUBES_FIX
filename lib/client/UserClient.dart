@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:guidedlayout2_1748/entity/user.dart';
 import 'dart:io';
 
@@ -199,34 +200,57 @@ static Future<void> update(User user, String token) async {
 }
 
 
-static Future<void> updateUserPhoto(String userId, File? image, String token) async {
-  if (image == null) {
-    print("No image provided.");
-    return;
+static Future<void> updateUserFoto(User user, File image, String token) async {
+    try {
+      var uri = Uri.parse('http://10.0.2.2:8000/api/user/foto/${user.id}');
+
+      // Membuat request multipart untuk mengirimkan file gambar
+      var request = http.MultipartRequest('POST', uri)
+        ..headers['Authorization'] = 'Bearer $token' // Menambahkan token untuk autentikasi
+        ..files.add(await http.MultipartFile.fromPath('foto', image.path)); // Menambahkan file gambar
+
+      // Mengirimkan request
+      var response = await request.send();
+
+      // Memeriksa apakah status code response adalah 200 (berhasil)
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        print('User photo updated successfully');
+        print('Response: $responseBody');
+      } else {
+        final responseBody = await response.stream.bytesToString();
+        print('Error updating photo: ${response.statusCode}, $responseBody');
+        throw Exception('Failed to update user photo: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error: $e");
+    }
   }
 
+static Future<void> deleteUserFoto(User user, String token) async {
   try {
-    var uri = Uri.parse('http://10.0.2.2:8000/api/user/photo/${userId}');
-    
-    var request = http.MultipartRequest('POST', uri)
-      ..headers['Authorization'] = 'Bearer $token'
-      ..files.add(await http.MultipartFile.fromPath('image', image.path));
+    var uri = Uri.parse('http://10.0.2.2:8000/api/user/foto/${user.id}');
 
-    var response = await request.send();
+    var response = await http.delete(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $token',  // Menambahkan token untuk autentikasi
+      },
+    );
 
+    // Memeriksa status code response
     if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      print('User photo updated successfully');
-      print('Response: $responseBody');
+      print('User photo deleted successfully');
     } else {
-      final responseBody = await response.stream.bytesToString();
-      print('Error updating photo: ${response.statusCode}, $responseBody');
-      throw Exception('Failed to update user photo: ${response.statusCode}');
+      print('Error deleting photo: ${response.statusCode}, ${response.body}');
+      throw Exception('Failed to delete user photo: ${response.statusCode}');
     }
   } catch (e) {
     print("Error: $e");
   }
 }
+
+
 
   // Delete user
   static Future<void> delete(String id) async {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:guidedlayout2_1748/viewPdf.dart';
 
 class ListNamaView extends StatelessWidget {
   const ListNamaView({super.key});
@@ -293,7 +294,18 @@ class PersonDetail extends StatelessWidget {
             const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigasi ke halaman ViewPdf
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ViewPdf(
+                        className: person.nama,
+                        price: person.harga,
+                      ),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding:

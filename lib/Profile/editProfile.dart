@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:guidedlayout2_1748/entity/user.dart';  // Mengimpor User
-import 'package:guidedlayout2_1748/client/UserClient.dart';  // Mengimpor fungsi dari client
+import 'package:guidedlayout2_1748/entity/user.dart';
+import 'package:guidedlayout2_1748/client/UserClient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -18,6 +18,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   TextEditingController heightController = TextEditingController();
   TextEditingController weightController = TextEditingController();
   String userId = '';
+  String? currentPhoto;
 
   @override
   void initState() {
@@ -35,20 +36,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
         throw Exception('Token not found');
       }
 
-      User user = await UserClient.fetchUserProfile(token);  // Menggunakan fungsi fetchUserProfile yang diimpor
+      User user = await UserClient.fetchUserProfile(token);
       setState(() {
         userId = user.id;
         usernameController.text = user.username;
         heightController.text = user.tinggi.toString();
         weightController.text = user.berat.toString();
+        currentPhoto = user.foto;
       });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error loading profile: $e")));
     }
   }
 
-  // Fungsi untuk memilih gambar profil
-  Future<void> pickImage() async {
+  // Fungsi untuk memilih gambar profil dari galeri
+  Future<void> pickImageFromGallery() async {
     try {
       final pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
       if (pickedImage == null) return;
@@ -61,18 +63,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  // Fungsi untuk mengambil gambar profil menggunakan kamera
+  Future<void> pickImageFromCamera() async {
+    try {
+      final pickedImage = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (pickedImage == null) return;
+
+      setState(() {
+        image = File(pickedImage.path);
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error capturing image: $e")));
+    }
+  }
+
   // Fungsi untuk memperbarui profil pengguna
   Future<void> updateUserProfileData() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
-    print("Fetched token: $token");
 
     if (token == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Token not found. Please log in again.")));
       return;
     }
 
-    // Membuat objek User dari input data
     User updatedUser = User(
       id: userId,
       username: usernameController.text,
@@ -81,10 +95,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
     );
 
     try {
-      // Menggunakan fungsi updateUserProfile untuk memperbarui data pengguna
+      // Perbarui data pengguna
       await UserClient.update(updatedUser, token);
 
-      // Memanggil fungsi untuk mendapatkan data terbaru setelah pembaruan
+      if (image != null) {
+        // Hapus foto lama jika ada dan unggah foto baru
+        if (currentPhoto != null && currentPhoto!.isNotEmpty) {
+          await UserClient.deleteUserFoto(updatedUser, token);
+        }
+        await UserClient.updateUserFoto(updatedUser, image!, token);
+      }
+
+      // Ambil data terbaru setelah pembaruan
       await fetchUserProfileData();
       Navigator.pop(context, true);
     } catch (err) {
@@ -111,7 +133,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: usernameController.text.isEmpty // Tampilkan loading jika data belum diisi
+      body: usernameController.text.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
@@ -121,21 +143,41 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey[200],
-                    backgroundImage: image != null ? FileImage(image!) : null,
-                    child: image == null
+                    backgroundImage: image != null
+                        ? FileImage(image!)
+                        : (currentPhoto != null && currentPhoto!.isNotEmpty
+                            ? NetworkImage('http://10.0.2.2:8000/storage/$currentPhoto')
+                            : null) as ImageProvider?,
+                    child: image == null && (currentPhoto == null || currentPhoto!.isEmpty)
                         ? const Icon(Icons.person, size: 50, color: Colors.grey)
                         : null,
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: pickImage,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: pickImageFromGallery,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text('Upload Foto', style: TextStyle(color: Colors.white)),
                       ),
-                    ),
-                    child: const Text('Upload Foto', style: TextStyle(color: Colors.white)),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: pickImageFromCamera,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: const Text('Ambil Foto', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   ProfileTextField(

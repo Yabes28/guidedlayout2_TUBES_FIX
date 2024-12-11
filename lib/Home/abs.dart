@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:guidedlayout2_1748/viewPdf.dart';
+import 'package:guidedlayout2_1748/View/view_list.dart';
 import 'package:guidedlayout2_1748/Home/isiAbs/isiAbs1.dart';
 
 class AbsPage extends StatelessWidget {
@@ -86,7 +87,7 @@ class AbsPage extends StatelessWidget {
                       context,
                       text: 'Apakah anda yakin ingin bergabung dengan kelas ini?',
                       onConfirmPressed: () {
-                        Navigator.of(context).pop(); // Tutup pop-up pertama
+                        Navigator.of(context).pop(); // Tutup dialog pertama
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -94,10 +95,16 @@ class AbsPage extends StatelessWidget {
                               context,
                               text: 'Apakah anda ingin menambah untuk personal trainer?',
                               onConfirmPressed: () {
-                                Navigator.of(context).pop(); // Tutup pop-up kedua
+                                Navigator.of(context).pop(); // Tutup dialog kedua
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ListNamaView(),
+                                  ),
+                                );
                               },
                               onCancelPressed: () {
-                                Navigator.of(context).pop(); // Tutup pop-up kedua
+                                Navigator.of(context).pop(); // Tutup dialog kedua
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -113,7 +120,7 @@ class AbsPage extends StatelessWidget {
                         );
                       },
                       onCancelPressed: () {
-                        Navigator.of(context).pop(); // Tutup pop-up pertama
+                        Navigator.of(context).pop(); // Tutup dialog pertama
                       },
                     );
                   },
@@ -202,7 +209,7 @@ class AbsPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('Batal'),
+                  child: const Text('Tidak'),
                 ),
               ),
             ],

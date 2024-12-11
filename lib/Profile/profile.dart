@@ -98,14 +98,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     children: [
                       const SizedBox(height: 20),
                       CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey[200],
-                        child: Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Colors.grey[700],
+                          radius: 50,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: user.foto != null && user.foto!.isNotEmpty
+                              ? NetworkImage('http://10.0.2.2:8000/storage/${user.foto}')
+                              : null,  // Set to null if there's no image
+                          child: user.foto == null || user.foto!.isEmpty
+                              ? const Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: Colors.grey,
+                                )
+                              : null, // Display icon only if there is no image
                         ),
-                      ),
                       const SizedBox(height: 10),
                       Text(
                         user.username,

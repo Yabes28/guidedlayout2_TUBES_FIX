@@ -245,13 +245,27 @@ class _CategorySelectionPageState extends State<CategorySelectionPage> {
                       title: 'Fullbody Workout',
                       price: 'Rp 450.000,00',
                       imageAsset: 'assets/fullbody.jpg',
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AbsPage(),
+                          ),
+                        );
+                      },
                     ),
                     WorkoutCard(
                       title: 'Lowerbody Workout',
                       price: 'Rp 300.000,00',
                       imageAsset: 'assets/lowerbody.jpg',
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AbsPage(),
+                          ),
+                        );
+                      },
                     ),
                     WorkoutCard(
                       title: 'Abs Workout',
